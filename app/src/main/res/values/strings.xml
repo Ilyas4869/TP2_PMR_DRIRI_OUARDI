@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
-    <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -9,4 +8,15 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+
+    <string name="activityMain_title">Saisie pseudo</string>
+    <string name="mainActivity_action_settings">Préférences</string>
+    <string name="mainActivity_pseudo_label">Pseudo</string>
+    <string name="preferences">Préférences</string>
+    <string name="listeActivity_title">Liste des listes</string>
+    <string name="listActivity_newList">Nouvelle Liste</string>
+
+    <string name="itemActivity_title">Liste des items</string>
+    <string name="itemActivity_newItem">Nouveau Item</string>
 </resources>
