@@ -1,19 +1,22 @@
 package com.example.myapplication
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
+import android.util.ArrayMap
 import android.view.Menu
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
+import com.example.myapplication.model.ProfilListeToDo
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
 
-class MainActivity : AppCompatActivity() {
+
+class MainActivity : GenericActivity() {
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,18 +30,9 @@ class MainActivity : AppCompatActivity() {
         val button_ok = findViewById<Button>(R.id.button_pseudo_ok)
         button_ok.setOnClickListener {
             saveData()
-            //val intent = Intent(this, ChoixListActivity::class.java)
-            val intent = Intent(this, ShowListActivity::class.java)
-            startActivity(intent)
         }
 
-
-
-        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        val editor = sharedPrefs.edit()
-        editor.apply {
-            putString("OK", "OKOKOOKOKOKOK")
-        }.apply()
+        userModule.getUsersData(this);
 
     }
 
@@ -50,8 +44,6 @@ class MainActivity : AppCompatActivity() {
         return true;
     }
 
-    val PREFS_PSEUDO_KEY = "PSEUDO"
-    //val PREFS_PSEUDOS_KEY = "PSEUDOS"
     private fun saveData() {
 
         val textView = findViewById<TextView>(R.id.editTextPseudo)
@@ -70,14 +62,28 @@ class MainActivity : AppCompatActivity() {
            // putStringSet(PREFS_PSEUDOS_KEY, pseudos)
         }.apply()
 
+        //Si l'utilisateur n'existe pas, on ajoute un nouveau
+        if (!userModule.users!!.containsKey(pseudo.lowercase())) {
+            //Le pseudo est ouveau, on créé un nouvel utilisateur
+            user = ProfilListeToDo()
+            user!!.login = pseudo
+            userModule.users!![pseudo.lowercase()] = user!!
+        }
+        else {
+            //Le pseudo existe déjà, on récupére l'utilisateur
+            user = userModule.users!![pseudo.lowercase()]!!
+        }
+
+        userModule.saveUsersData(this)
+
         alerter("Pseudo enregistré!")
         textView.text = ""
-    }
 
-    private fun alerter(s: String) {
-        val t = Toast.makeText(this, s, Toast.LENGTH_SHORT)
-        t.show()
+        val intent = Intent(this, ChoixListActivity::class.java)
+        val b = Bundle()
+        b.putString(BUNDLE_PSEUDO_KEY, pseudo)
+        intent.putExtras(b)
+        startActivity(intent)
     }
-
 
 }
