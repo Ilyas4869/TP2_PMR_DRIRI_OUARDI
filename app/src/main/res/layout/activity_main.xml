@@ -24,7 +24,7 @@
             android:text="@string/mainActivity_pseudo_label"
             android:textSize="20sp" />
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/editTextPseudo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

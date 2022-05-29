@@ -3,20 +3,17 @@ package com.example.myapplication
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.ArrayMap
+import android.util.Log
 import android.view.Menu
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import com.example.myapplication.model.ProfilListeToDo
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
 
 
 class MainActivity : GenericActivity() {
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +31,21 @@ class MainActivity : GenericActivity() {
 
         userModule.getUsersData(this);
 
+        updateAutoPseudoComplete()
+
+    }
+
+    fun updateAutoPseudoComplete() {
+        //Propositions d'auto complétion
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        val pseudos = sharedPrefs.getStringSet(PREFS_PSEUDOS_KEY, HashSet<String>())
+        val textPseudo =findViewById<AutoCompleteTextView>(R.id.editTextPseudo)
+        Log.i("DEBUG", pseudos!!.toTypedArray().size.toString())
+        val adapterPseudos: ArrayAdapter<*> =
+            ArrayAdapter<Any?>(this, android.R.layout.simple_list_item_1, pseudos!!.toTypedArray())
+        textPseudo.setAdapter(adapterPseudos)
+        textPseudo.setThreshold(1)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -45,22 +57,23 @@ class MainActivity : GenericActivity() {
     }
 
     private fun saveData() {
-
-        val textView = findViewById<TextView>(R.id.editTextPseudo)
-        val pseudo = textView.text.toString()
-
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-      /*  var pseudos = sharedPrefs.getStringSet(PREFS_PSEUDOS_KEY, HashSet<String>())
+        val textView = findViewById<AutoCompleteTextView>(R.id.editTextPseudo)
+        val pseudo = textView.text.toString()
+
+        var pseudos = sharedPrefs.getStringSet(PREFS_PSEUDOS_KEY, HashSet<String>())
         // On créé une copie de l'ancien tableau
-        pseudos = HashSet<String>(pseudos)
-        pseudos.add(pseudo)*/
+        pseudos = HashSet<String>(pseudos!!)
+        pseudos.add(pseudo)
 
         val editor = sharedPrefs.edit()
         editor.apply {
             putString(PREFS_PSEUDO_KEY, pseudo)
-           // putStringSet(PREFS_PSEUDOS_KEY, pseudos)
+            putStringSet(PREFS_PSEUDOS_KEY, pseudos)
         }.apply()
+
+        updateAutoPseudoComplete()
 
         //Si l'utilisateur n'existe pas, on ajoute un nouveau
         if (!userModule.users!!.containsKey(pseudo.lowercase())) {
@@ -77,7 +90,7 @@ class MainActivity : GenericActivity() {
         userModule.saveUsersData(this)
 
         alerter("Pseudo enregistré!")
-        textView.text = ""
+        textView.setText("")
 
         val intent = Intent(this, ChoixListActivity::class.java)
         val b = Bundle()

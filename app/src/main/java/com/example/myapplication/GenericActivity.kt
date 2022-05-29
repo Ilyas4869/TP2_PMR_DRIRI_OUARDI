@@ -13,7 +13,7 @@ import java.lang.reflect.Type
 abstract class GenericActivity : AppCompatActivity() {
 
     val PREFS_PSEUDO_KEY = "PSEUDO"
-    //val PREFS_PSEUDOS_KEY = "PSEUDOS"
+    val PREFS_PSEUDOS_KEY = "PSEUDOS"
     val BUNDLE_PSEUDO_KEY = "PSEUDO"
     val BUNDLE_LISTNAME_KEY = "LIST_NAME"
 
