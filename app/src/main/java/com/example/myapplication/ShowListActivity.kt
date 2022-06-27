@@ -112,7 +112,7 @@ class ShowListActivity : GenericActivity() {
     override fun updateData() {
         super.updateData()
 
-        if(items != null) {
+        if(isNetworkAvailable() && items != null) {
             showListActivityScope.launch {
                 runCatching {
                     dataProvider.saveItems(items!!)

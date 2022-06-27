@@ -128,7 +128,7 @@ class ChoixListActivity : GenericActivity() {
     override fun updateData() {
         super.updateData()
 
-        if(lists != null) {
+        if(isNetworkAvailable() && lists != null) {
             choixListActivityScope.launch {
                 runCatching {
                     dataProvider.saveLists(lists!!)

@@ -62,7 +62,6 @@ class DataProvider(app: Application, val context: Context) {
     private val listDao = database.listDao()
 
       suspend fun getLists(hash: String): List<ListeToDo>  {
-
           return try {
               val lists = listsService.getLists(hash).lists.toList()
               saveLists(lists)
