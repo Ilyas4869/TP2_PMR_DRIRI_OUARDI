@@ -8,4 +8,11 @@
         android:title="Pseudo"
         />
 
+    <EditTextPreference
+        android:key="API_URL"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Url de l'API"
+        />
+
 </PreferenceScreen>

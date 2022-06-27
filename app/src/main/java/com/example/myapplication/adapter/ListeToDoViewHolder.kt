@@ -31,8 +31,8 @@ class ListeToDoViewHolder(
     fun onListClick(liste: ListeToDo) {
         val intent = Intent(activity, ShowListActivity::class.java)
         val b = Bundle()
-        b.putString(activity.BUNDLE_PSEUDO_KEY, activity.user!!.login)
-        b.putString(activity.BUNDLE_LISTNAME_KEY, liste.titreListeToDo)
+        //b.putString(activity.BUNDLE_PSEUDO_KEY, activity.user!!.login)
+        b.putLong(activity.BUNDLE_LISTID_KEY, liste.id)
         intent.putExtras(b)
         activity.startActivity(intent)
     }

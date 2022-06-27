@@ -1,17 +1,17 @@
 package com.example.myapplication.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 class ListeToDo() {
-
+    @PrimaryKey
+    var id: Long = -1
     var titreListeToDo: String = ""
-    val itemList: MutableList<ItemToDo> = ArrayList()
 
-    public fun rechercherItem(descriptionItem: String): ItemToDo? {
-        for(item in itemList)
-        {
-            if (item.description == descriptionItem)
-                return item;
-        }
-        return null;
+    constructor(id: Long, titre: String) : this() {
+        this.id = id
+        this.titreListeToDo = titre
     }
 
     override fun toString(): String {

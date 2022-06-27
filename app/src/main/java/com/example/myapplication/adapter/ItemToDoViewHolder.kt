@@ -30,7 +30,7 @@ class ItemToDoViewHolder(
 
     fun onCheckedChange(item: ItemToDo, isChecked: Boolean) {
         item.fait = isChecked
-        activity.userModule.saveUsersData(activity)
+        activity.updateData()
     }
 
 }

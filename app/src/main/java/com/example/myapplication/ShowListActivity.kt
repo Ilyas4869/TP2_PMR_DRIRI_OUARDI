@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
 import android.widget.Button
@@ -11,14 +12,21 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.adapter.ItemToDoAdapter
 import com.example.myapplication.adapter.ListeToDoAdapter
+import com.example.myapplication.data.DataProvider
 import com.example.myapplication.model.ItemToDo
 import com.example.myapplication.model.ListeToDo
 import com.example.myapplication.model.ProfilListeToDo
+import kotlinx.coroutines.*
 
 class ShowListActivity : GenericActivity() {
 
     var list: RecyclerView? = null;
-    var listToDo: ListeToDo? = null;
+    private val dataProvider: DataProvider by lazy { DataProvider(this.application, this) }
+    var items: List<ItemToDo>? = null;
+
+    private val showListActivityScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -29,31 +37,61 @@ class ShowListActivity : GenericActivity() {
         toolbar.title = getString(R.string.itemActivity_title)
         setSupportActionBar(toolbar);
 
-        val button_ok = findViewById<Button>(R.id.button_item_ok)
+       /* val button_ok = findViewById<Button>(R.id.button_item_ok)
         button_ok.setOnClickListener {
             onClickOkButton()
-        }
+        }*/
 
         val b = intent.extras
-        var pseudo: String? = null
-        var listeTitre: String? = null
-        if (b != null) pseudo = b.getString(BUNDLE_PSEUDO_KEY)
-        if (b != null) listeTitre = b.getString(BUNDLE_LISTNAME_KEY)
+        var listId: Long? = null
+        if (b != null) listId = b.getLong(BUNDLE_LISTID_KEY)
 
-        userModule.getUsersData(this)
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        var apiHash = sharedPrefs.getString(API_TOKEN_KEY, "")
+        loadItems(listId!!, apiHash!!)
 
-        user = userModule.users?.get(pseudo!!.lowercase())
-        listToDo = user!!.rechercheListe(listeTitre!!);
 
-        if(user != null) {
-            list = findViewById<RecyclerView>(R.id.liste_of_itemToDo)
-            list!!.adapter = ItemToDoAdapter(this, dataSet = provideDataSet(listToDo!!))
-            list!!.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        showListActivityScope.cancel()
+    }
+
+
+    private fun loadItems(listId: Long, token: String) {
+
+        showListActivityScope.launch {
+            runCatching {
+                getItems(listId, token)
+            }.fold(
+                onSuccess = { items ->
+                    this@ShowListActivity.items = items;
+                    list = findViewById<RecyclerView>(R.id.liste_of_itemToDo)
+                    list!!.adapter = ItemToDoAdapter(this@ShowListActivity, dataSet = items)
+                    list!!.layoutManager = LinearLayoutManager(this@ShowListActivity, RecyclerView.VERTICAL, false)
+
+                },
+                onFailure = {
+                    // displayErrorScreen
+                    Log.e("ShowListActivity", "Fails -> $it")
+                }
+            )
+
         }
     }
 
-    private fun provideDataSet(liste: ListeToDo): List<ItemToDo> {
-        return liste.itemList;
+    private suspend fun getItems(listId: Long, token: String): List<ItemToDo> {
+        val items = dataProvider.getItems(listId, token)
+        return withContext(Dispatchers.Default) {
+            items.map { item ->
+                ItemToDo(
+                    id = item.id,
+                    description = item.description,
+                    fait = item.fait,
+                )
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -64,23 +102,22 @@ class ShowListActivity : GenericActivity() {
         return true;
     }
 
-    private fun onClickOkButton() {
-        val textView = findViewById<TextView>(R.id.editTextItemName)
-        val titreOfItem = textView.text.toString()
 
-        val itemToDo = ItemToDo(titreOfItem)
+    override fun onResume() {
+        super.onResume()
+        updateData()
 
-        listToDo!!.itemList.add(itemToDo)
-        //On enregistre les données
-        userModule.saveUsersData(this)
-
-        //On met à jour le RecyclerView
-        val position = list!!.adapter?.getItemCount()!! - 1;
-        list!!.adapter?.notifyItemInserted(position);
-        list!!.adapter?.notifyItemRangeChanged(position, position + 1);
-
-        alerter("Item ajouté!")
-        textView.text = ""
     }
 
+    override fun updateData() {
+        super.updateData()
+
+        if(items != null) {
+            showListActivityScope.launch {
+                runCatching {
+                    dataProvider.saveItems(items!!)
+                }
+            }
+        }
+    }
 }
